@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer');
 const { program } = require('commander');
 const fs = require('fs')
+
 //pretty colors
 var fail="[\033[91m+\033[0m]"
 var succ="[\033[92m+\033[0m]"
@@ -24,7 +25,17 @@ program
 .option('-m, --manual', 'manual mode');
 program.parse(process.argv);
 
-console.log(process.argv)
+console.log = function(message){
+    
+    if(!bLastOutputImportant){
+        process.stdout.write("\r\x1b[K")
+        process.stdout.write(message)
+    }else{
+        process.stdout.write("\n" + message)
+    }
+    
+}
+
 //parse cli params to variables
 var verbose = program.verbose || false
 var url=program.url
@@ -34,18 +45,20 @@ var timeoutLen=program.timeout //deprecated
 var window = program.window || false
 var browser = false
 
+var threads = []
 var wlistContent = false
 var preloadFile;
-
-function xssCallback(){
-
-}
-
+var bLastOutputImportant=true
 async function makeNewThread(browser, callback){
     const page = await browser.newPage();
     await page.evaluateOnNewDocument(preloadFile);
     await page.exposeFunction('xssCallback', (href)=>{
         catchXSS(href)
+    })
+
+    await page.exposeFunction('jsRedirectCallback', (href)=>{
+        //page.justRedirected=true
+        catchRedirectJS(page, href)
     })
     if(verbose) console.log("Created thread")
     callback(page)
@@ -56,8 +69,14 @@ async function makeNewThread(browser, callback){
 async function loadURL(thread, url){
     thread.goto(url)
     const response = await thread.waitForNavigation();
+    chain = (response.request().redirectChain())
     thread.status = response.status();
-    catchNormal(thread)
+    if(chain.length){
+        thread.wasHTTPRedirect = true;
+        catchRedirect(thread, chain)
+    }else{
+        catchNormal(thread)
+    }
     return loadNextUrl(thread)
 }
 
@@ -69,14 +88,22 @@ function terminateProgram(){
     }
 }
 
+var terminatedCount = 0
 async function loadNextUrl(thread){
 
     //if this thread is done
-    if(wlistFpointer>=wlistContent.length){ 
-        terminateProgram()        
+    if(wlistFpointer>=wlistContent.length){
+        terminatedCount+=1
+        if(terminatedCount==workerCount){
+            terminateProgram()
+        } 
+        return
     }else{
 
         var line = wlistContent[wlistFpointer]
+        line = line.replace(/ /g, '%20')
+        thread.pld = line
+        
 
         //create fuzz target
         var t = url.replace("FUZZ",(line))
@@ -91,34 +118,61 @@ async function loadNextUrl(thread){
 
 
 //Callbacks from different types of events
-function initCallback(type){
-    if(url.length>150) url = (url.substring(0, 150) + "...")
-    if(type=='normal'){
-        bLastOutputImportant=false;
-    }
+function initCallback(_url){
+    url = _url;
+    if(_url.length>150) url = (_url.substring(0, 150) + "...")
+    return url
 }
 
-function catchRedirect(thread){
-    initCallback('redirect')
-    console.log(`${ystart}[${thread.status}]  [REDIRECT]--> ${thread.toUrl}\n\t ${thread.pld} ${colstop}`)
+function catchRedirect(thread, chain){
+    thread.url = initCallback(thread.url)
+    console.log(`${ystart}[${thread.status}]  [REDIRECT-HTTP] ${thread.url}${thread.pld}`)
+    for(var i=0;i<chain.length;i++){
+        console.log(`       ${"    ".repeat(i)}|--> ${chain[i].response().url()}`)
+    }
+    console.log(colstop)
+    bLastOutputImportant=true
+    
+}
+
+function catchRedirectJS(thread, target){
+    return
+    if(thread.wasHTTPRedirect){
+        thread.wasHTTPRedirect=false;
+        return
+    }
+    initCallback('redirect-js')
+    console.log(`${bstart}[200]  [REDIRECT-JS] ${thread.url}${thread.pld}`)
+    console.log(`       |--> ${target}`)
+    console.log(colstop)
+    
 }
 
 function catchXSS(href){
-    initCallback('xss')
+    href = initCallback(href)
     console.log(`${rstart}[${200}]  [XSS]  ${href} ${colstop}`)
+    bLastOutputImportant=true
 }
 
 function catchLoadFailure(thread){
-    initCallback('fail')
+    thread.url = initCallback(thread.url)
     console.log(`${bstart}[${thread.status}]  [FAILURE]  ${thread.pld} ${colstop}`)
+    bLastOutputImportant=true
 }
 
 function catchNormal(thread){
-    initCallback('normal')
+    
+    thread.url = initCallback(thread.url)
+    if(thread.justRedirected){
+        thread.justRedirected=false
+        return
+    }
     if(thread.status==200){
         console.log(`${gstart}[${thread.status}] ${colstop} ${thread.url}`)
+        bLastOutputImportant=false
     }else{
         console.log(`${rstart}[${thread.status}] ${colstop} ${thread.url}`)
+        bLastOutputImportant=true
     }
     return
 }
@@ -150,7 +204,6 @@ function catchNormal(thread){
     
 
     //initialize threads
-    var threads = []
     for(var i=0;i<workerCount;i++){
         var newThread = makeNewThread(browser, loadNextUrl);
         threads.push(newThread)
