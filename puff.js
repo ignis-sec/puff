@@ -139,7 +139,7 @@ function catchNormal(thread){
 
 
 (async () => {
-    browser = await puppeteer.launch({headless:false});
+    browser = await puppeteer.launch({});
     preloadFile = await fs.readFileSync('./preload.js', 'utf8');
     //read wordlist
     if(verbose) console.log(`${warn} Reading Wordlist`)
