@@ -1,0 +1,22 @@
+{
+  "name": "puff",
+  "version": "1.0.0",
+  "description": "",
+  "main": "puff.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "puff",
+    "fuzz",
+    "fuzzing",
+    "tool",
+    "security"
+  ],
+  "author": "Ata \"Ignis\" Hakçıl",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^5.1.0",
+    "puppeteer": "^3.0.4"
+  }
+}
