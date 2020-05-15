@@ -171,7 +171,7 @@ function catchXSS(thread, href){
     thread.url = initCallback(thread)
     writeRequestResponse(`${rstart}[${thread.id}][${200}]  [XSS]  ${thread.url} ${colstop}`)
     bLastOutputImportant=true
-    thread.evaluate(() => window.stop());
+    //thread.evaluate(() => window.stop());
 }
 
 function catchLoadFailure(thread){
@@ -220,7 +220,7 @@ function catchNormal(thread){
         process.stdout.cursorTo(0,0)
     }
     browser = await puppeteer.launch({});
-    preloadFile = await fs.readFileSync('./preload.js', 'utf8');
+    preloadFile = await fs.readFileSync(__dirname + '/preload.js', 'utf8');
     //read wordlist
     if(verbose) console.log(`${warn} Reading Wordlist`)
     wlistContent = await fs.readFileSync(wordlist).toString().split("\n")
