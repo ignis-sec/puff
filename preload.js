@@ -8,6 +8,5 @@ window.addEventListener("unload", function (event) {
     //Catch js redirects
     jsRedirectCallback(window.location.href)
  });
-test = alert
 prompt = alert
 confirm = alert
