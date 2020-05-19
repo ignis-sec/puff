@@ -21,13 +21,14 @@ program
 .option('-t, --threads <tcount>', 'threads to run', 5)
 .option('-v, --verbose', 'verbosity')
 .option('-o, --output <filename>', 'output filename')
-.option('-d, --demo', 'Demo mode, hides url\'s in output')
+.option('-d, --demo', 'Demo mode, hides url\'s in output, and clears terminal when run (to hide url in cli)')
 .option('-s, --status', 'Show requests with unusual response codes')
 .option('-oA, --outputAll', 'Output all the responses')
 program.parse(process.argv);
 
 var pendingOutput=[]
 
+//graceful termination, output is not lost on sigint/sigterm
 function gracefulTermination(bTerminate=true){
     console.log('Exiting....')
     if(program.output){
@@ -39,6 +40,8 @@ function gracefulTermination(bTerminate=true){
                 return
             }
         }
+
+        //there were results and output pending, write it in json format
         var result = {}
         baseUrl = program.url.replace(/^http(s)?:\/\//, '')
         baseUrl = baseUrl.replace(/\/.*$/, '')
@@ -61,30 +64,36 @@ function gracefulTermination(bTerminate=true){
     }
 }
 
-
+//register signal handlers
 process.once('SIGINT', function (code) {
    gracefulTermination()
   });
 
-  process.once('SIGTERM', function (code) {
-    gracefulTermination()
-  });
+process.once('SIGTERM', function (code) {
+gracefulTermination()
+});
 
 
 
 
 
-
+//responsible for writing request output
 function writeRequestResponse(message, clamp=process.stdout.columns-2){
+    
+    //if message is longer than the clamp length, clamp it and append ...
     if(message.length >=clamp)
         message = (message.substring(0, clamp - 3) + "...")
+    
+    //if demo mode is activated, hide base url
     if(demo){
         message = message.replace(/http(s)?:\/\/.*?\//, "https://[REDACTED]/")
     }
 
+    //output all mode, write every response, even normal ones
     if(oa){
         process.stdout.write("\n" + message)
     }else{
+        //if last output wasn't registered as important, delete the last line
         if(!bLastOutputImportant){
             process.stdout.write("\r\x1b[K")
             process.stdout.write(message)
@@ -115,6 +124,8 @@ var wlistFpointer=0
 var preloadFile;
 var bLastOutputImportant=true
 
+
+//create new thread, in this context, create new chromium tab
 var threadIDCounter = 0
 async function makeNewThread(browser, callback){
     const page = await browser.newPage();
@@ -134,13 +145,21 @@ async function makeNewThread(browser, callback){
     return page
 }
 
-
+//load a url in thread
 async function loadURL(thread, url){
     try{
         thread.goto(thread.url)
+        
+        //capture window response
         const response = await thread.waitForNavigation();
+        
+        //acquire possible redirect chain
         chain = (response.request().redirectChain())
+        
+        //get http response 
         thread.status = response.status();
+        
+        //if there was a redirect chain, output it. If not, its a normal response
         if(chain.length){
             thread.wasHTTPRedirect = true;
             catchRedirect(thread, chain)
@@ -148,37 +167,54 @@ async function loadURL(thread, url){
             catchNormal(thread)
         }
     }catch(e){
+        //Not properly implemented yet, dom-errors, http timeouts
         catchLoadFailure(thread)
     }
     
+    //recurses
     loadNextUrl(thread)
 }
 
+//Called when a pool requests next url from wlist, but wlist has finished
+//Attempt terminate only once, call gracefulTermination to handle file input first
 terminated = false
 function terminateProgram(){
     gracefulTermination(false);
     if(!terminated){
         terminated=true
+        //deletes if last output was normal
         writeRequestResponse("")
         browser.close()
     }
 }
 
+//Count how many threads were terminated
 var terminatedCount = 0
+
+//prepare thread for loading url
 async function loadNextUrl(thread){
     thread.url = ""
+
     //if this thread is done
     if(wlistFpointer>=wlistContent.length){
         terminatedCount+=1
         wlistFpointer+=1
+        
+        //Only terminate program if all the threads have finished, so it doesn't lose the progress on those pending requests. 
         if(terminatedCount==workerCount){
+            //TODO, timeout possible idle/stuck threads and terminate
             terminateProgram()
-        } 
+        }
+        
+        //Return because no more paylaods left in the wordlist
         return
     }else{
 
+        //acquire next line from wordlist for pool
         var line = wlistContent[wlistFpointer]
         wlistFpointer+=1
+
+        //not sure if needed, whitespace in url seems to be a global 400
         //line = line.replace(/ /g, '%20')
         thread.pld = line
         var t=url
@@ -190,12 +226,13 @@ async function loadNextUrl(thread){
 }
 
 
-//Callbacks from different types of events
+//Deprecated and im too lazy to remove it from the code
 function initCallback(page){
     return page.url
     //this had something else, im too lazy to change it
 }
 
+//Catch a redirect and output it
 function catchRedirect(thread, chain){
     thread.url = initCallback(thread)
     writeRequestResponse(`${ystart}[${thread.status}]  [REDIRECT-HTTP] ${thread.url}${thread.pld}`)
@@ -207,6 +244,7 @@ function catchRedirect(thread, chain){
     
 }
 
+//catch a js based redirect, quite not ready (race condition with normal redirect, no good solution with 100% precision yet)
 function catchRedirectJS(thread, target){
     return
     if(thread.wasHTTPRedirect){
@@ -220,6 +258,7 @@ function catchRedirectJS(thread, target){
     
 }
 
+//catch when an xss occurs
 function catchXSS(thread, href){
     thread.url = initCallback(thread)
     writeRequestResponse(`${rstart}[${thread.id}][${200}]  [XSS]  ${thread.url} ${colstop}`)
@@ -228,15 +267,19 @@ function catchXSS(thread, href){
         url:thread.url,
         payload:thread.pld
     })
+
+    //xss windows tend to get load looped, but not sure if needed
     //thread.evaluate(() => window.stop());
 }
 
+//reserved for dom errors TODO
 function catchLoadFailure(thread){
     thread.url = initCallback(thread)
     writeRequestResponse(`${bstart}[${thread.status}]  [FAILURE]  ${thread.pld} ${colstop}`, 5000)
     bLastOutputImportant=true
 }
 
+//just a normal response
 function catchNormal(thread){
     
     thread.url = initCallback(thread)
@@ -255,33 +298,24 @@ function catchNormal(thread){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//init tool
 (async () => {
+    //if its demo mode, clear commandline, and remove the actual command (so it hides the url in cli)
     if(demo){
         process.stdout.clearLine()
         process.stdout.cursorTo(0,0)
         process.stdout.write(' '.repeat(128))
         process.stdout.cursorTo(0,0)
     }
+
     browser = await puppeteer.launch({});
+
+    //preload our junk to browser
     preloadFile = await fs.readFileSync(__dirname + '/preload.js', 'utf8');
+
     //read wordlist
     if(verbose) console.log(`${warn} Reading Wordlist`)
     wlistContent = await fs.readFileSync(wordlist).toString().split("\n")
-   
     if(verbose) console.log(`${succ} Wordlist loaded, ${wlistContent.length} lines.`)
     
     //initialize threads
