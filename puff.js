@@ -20,10 +20,60 @@ program
 .requiredOption('-u, --url <url>', 'url to fuzz')
 .option('-t, --threads <tcount>', 'threads to run', 5)
 .option('-v, --verbose', 'verbosity')
+.option('-o, --output <filename>', 'output filename')
 .option('-d, --demo', 'Demo mode, hides url\'s in output')
 .option('-s, --status', 'Show requests with unusual response codes')
 .option('-oA, --outputAll', 'Output all the responses')
 program.parse(process.argv);
+
+var pendingOutput=[]
+
+function gracefulTermination(bTerminate=true){
+    console.log('Exiting....')
+    if(program.output){
+        if(!pendingOutput.length){
+            console.log('No vulnerabilities found, not creating an output file.')
+            if(bTerminate){
+                process.exit(1)
+            }else{
+                return
+            }
+        }
+        var result = {}
+        baseUrl = program.url.replace(/^http(s)?:\/\//, '')
+        baseUrl = baseUrl.replace(/\/.*$/, '')
+    
+        result.host = baseUrl
+        result.fuzzTarget = program.url
+        result.found = []
+        for(var i=0;i<pendingOutput.length;i++){
+            result.found.push(pendingOutput[i])
+        }
+    
+        var data = JSON.stringify(result);
+        fs.writeFileSync(outputFile, data);
+    }
+
+    if(bTerminate){
+        process.exit(1)
+    }else{
+        return
+    }
+}
+
+
+process.once('SIGINT', function (code) {
+   gracefulTermination()
+  });
+
+  process.once('SIGTERM', function (code) {
+    gracefulTermination()
+  });
+
+
+
+
+
 
 function writeRequestResponse(message, clamp=process.stdout.columns-2){
     if(message.length >=clamp)
@@ -56,6 +106,8 @@ var demo = program.demo || false
 var status = program.status || false
 var oa = program.outputAll || false
 var browser = false
+var outputFile = program.output|| false
+
 
 var threads = []
 var wlistContent = false
@@ -104,6 +156,7 @@ async function loadURL(thread, url){
 
 terminated = false
 function terminateProgram(){
+    gracefulTermination(false);
     if(!terminated){
         terminated=true
         writeRequestResponse("")
@@ -171,6 +224,10 @@ function catchXSS(thread, href){
     thread.url = initCallback(thread)
     writeRequestResponse(`${rstart}[${thread.id}][${200}]  [XSS]  ${thread.url} ${colstop}`)
     bLastOutputImportant=true
+    pendingOutput.push({
+        url:thread.url,
+        payload:thread.pld
+    })
     //thread.evaluate(() => window.stop());
 }
 
