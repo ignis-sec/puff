@@ -308,7 +308,7 @@ function catchNormal(thread){
         process.stdout.cursorTo(0,0)
     }
 
-    browser = await puppeteer.launch({});
+    browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
 
     //preload our junk to browser
     preloadFile = await fs.readFileSync(__dirname + '/preload.js', 'utf8');
