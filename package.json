@@ -1,5 +1,5 @@
 {
-  "name": "puff",
+  "name": "puff-fuzz",
   "version": "0.0.1",
   "description": "",
   "main": "puff.js",
@@ -19,7 +19,9 @@
     "commander": "^5.1.0",
     "puppeteer": "^3.0.4"
   },
-  "bin": "puff.js",
+  "bin": {
+    "puff":"puff.js"
+  },
   "pkg":{
     "scripts":"preload.js"
   }

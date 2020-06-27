@@ -14,11 +14,23 @@ npm install
 
 **OR**
 
-
+If you dont have chromium:
 ```
-npm install -g puff
+npm install -g puff-fuzz
 ```
 
+**If you have chromium: (Don't forget to set its path in config.json)**
+windows:
+```
+set PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+npm install -g puff-fuzz
+```
+
+linux:
+```
+export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+npm install -g puff-fuzz
+```
 
 # Help String
 
