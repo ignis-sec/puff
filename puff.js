@@ -2,21 +2,7 @@ const puppeteer = require('puppeteer');
 const { program } = require('commander');
 const fs = require('fs')
 const path = require('path')
-
-
-const executablePath =
-  process.env.PUPPETEER_EXECUTABLE_PATH ||
-  (process.pkg
-    ? path.join(
-        path.dirname(process.execPath),
-        'puppeteer',
-        ...puppeteer
-          .executablePath()
-          .split(path.sep)
-          .slice(6), // /snapshot/project/node_modules/puppeteer/.local-chromium
-      )
-    : puppeteer.executablePath());
-
+var config = require('./config.json')
 
 
 //pretty colors
@@ -333,7 +319,7 @@ function catchNormal(thread){
         process.stdout.cursorTo(0,0)
     }
 
-    browser = await puppeteer.launch({executablePath,args: ['--no-sandbox', '--disable-setuid-sandbox'], ignoreHTTPSErrors: sslIgnore});
+    browser = await puppeteer.launch({executablePath:config.chromium_path,args: ['--no-sandbox', '--disable-setuid-sandbox'], ignoreHTTPSErrors: sslIgnore});
 
     //preload our junk to browser
     preloadFile = await fs.readFileSync(__dirname + '/preload.js', 'utf8');
