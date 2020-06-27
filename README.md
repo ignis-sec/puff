@@ -20,6 +20,7 @@ npm install -g puff-fuzz
 ```
 
 **If you have chromium: (Don't forget to set its path in config.json)**
+
 windows:
 ```
 set PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
