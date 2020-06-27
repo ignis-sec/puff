@@ -10,3 +10,4 @@ window.addEventListener("unload", function (event) {
  });
 prompt = alert
 confirm = alert
+puff = alert

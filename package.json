@@ -1,6 +1,6 @@
 {
   "name": "puff",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "puff.js",
   "scripts": {
@@ -18,5 +18,9 @@
   "dependencies": {
     "commander": "^5.1.0",
     "puppeteer": "^3.0.4"
+  },
+  "bin": "puff.js",
+  "pkg":{
+    "scripts":"preload.js"
   }
 }

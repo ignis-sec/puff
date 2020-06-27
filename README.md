@@ -7,24 +7,58 @@ Simple clientside vulnerability fuzzer, powered by puppeteer.
 ## INSTALL
 
 ```
-git clone ..........
+git clone https://github.com/FlameOfIgnis/puff
 cd puff
 npm install
 ```
 
-OR
+**OR**
 
-/* not yet, need release candidate first */
+
 ```
 npm install -g puff
 ```
 
-# Sample runs
+
+# Help String
 
 ```
-node puff.js -w xss.txt -u http://your.url?message=FUZZ
+Usage: puff [options]
 
-node puff.js -w xss.txt -u http://your.url?message=FUZZ -t 25
+Options:
+  -w, --wordlist <file>    wordlist to use
+  -u, --url <url>          url to fuzz
+  -t, --threads <tcount>   threads to run (default: 5)
+  -v, --verbose            verbosity
+  -o, --output <filename>  output filename
+  -d, --demo               Demo mode, hides url's in output, and clears terminal when run (to hide url in cli)
+  -s, --status             Show requests with unusual response codes
+  -oA, --outputAll         Output all the responses
+  -k, --ignoreSSL          Ignore ssl errors
+  -h, --help               display help for command
+```
 
-node puff.js -w xss.txt -u http://your.url?message=FUZZ -d
+
+# Alert is filtered by WAF?
+Don't worry, just modify your wordlist to use `puff()`  instead of `alert()` in your payload.
+
+# Sample runs
+
+
+Running from source:
+```
+node puff.js -w xss.txt -u "http://your.url?message=FUZZ"
+
+node puff.js -w xss.txt -u "http://your.url?message=FUZZ" -t 25
+
+node puff.js -w xss.txt -u "http://your.url?message=FUZZ" -d
+```
+
+installed via npm:
+```
+puff -w xss.txt -u "http://your.url?message=FUZZ"
+
+puff -w xss.txt -u "http://your.url?message=FUZZ" -t 25
+
+puff -w xss.txt -u "http://your.url?message=FUZZ" -d
 ```

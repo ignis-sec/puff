@@ -1,6 +1,23 @@
 const puppeteer = require('puppeteer');
 const { program } = require('commander');
 const fs = require('fs')
+const path = require('path')
+
+
+const executablePath =
+  process.env.PUPPETEER_EXECUTABLE_PATH ||
+  (process.pkg
+    ? path.join(
+        path.dirname(process.execPath),
+        'puppeteer',
+        ...puppeteer
+          .executablePath()
+          .split(path.sep)
+          .slice(6), // /snapshot/project/node_modules/puppeteer/.local-chromium
+      )
+    : puppeteer.executablePath());
+
+
 
 //pretty colors
 var fail="[\033[91m+\033[0m]"
@@ -24,6 +41,7 @@ program
 .option('-d, --demo', 'Demo mode, hides url\'s in output, and clears terminal when run (to hide url in cli)')
 .option('-s, --status', 'Show requests with unusual response codes')
 .option('-oA, --outputAll', 'Output all the responses')
+.option('-k, --ignoreSSL', 'Ignore ssl errors')
 program.parse(process.argv);
 
 var pendingOutput=[]
@@ -48,6 +66,9 @@ function gracefulTermination(bTerminate=true){
     
         result.host = baseUrl
         result.fuzzTarget = program.url
+        result.host_ip = remoteAddr
+        result.port = remotePort
+        result.source = 'puff-fuzzer'
         result.found = []
         for(var i=0;i<pendingOutput.length;i++){
             result.found.push(pendingOutput[i])
@@ -116,13 +137,15 @@ var status = program.status || false
 var oa = program.outputAll || false
 var browser = false
 var outputFile = program.output|| false
-
+var sslIgnore = program.ignoreSSL|| false
 
 var threads = []
 var wlistContent = false
 var wlistFpointer=0
 var preloadFile;
 var bLastOutputImportant=true
+var remoteAddr = false
+var remotePort = false
 
 
 //create new thread, in this context, create new chromium tab
@@ -152,7 +175,9 @@ async function loadURL(thread, url){
         
         //capture window response
         const response = await thread.waitForNavigation();
-        
+        remoteAddr = response._remoteAddress.ip
+        remotePort = response._remoteAddress.port
+
         //acquire possible redirect chain
         chain = (response.request().redirectChain())
         
@@ -215,10 +240,10 @@ async function loadNextUrl(thread){
         wlistFpointer+=1
 
         //not sure if needed, whitespace in url seems to be a global 400
-        //line = line.replace(/ /g, '%20')
+        line = line.replace(/ /g, '%20')
         thread.pld = line
         var t=url
-        t = t.replace("FUZZ",line)
+        t = t.replace(/FUZZ/g,line.replace(/\n|\r/g,''))
         thread.url = t
         
         loadURL(thread,thread.url)
@@ -308,7 +333,7 @@ function catchNormal(thread){
         process.stdout.cursorTo(0,0)
     }
 
-    browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
+    browser = await puppeteer.launch({executablePath,args: ['--no-sandbox', '--disable-setuid-sandbox'], ignoreHTTPSErrors: sslIgnore});
 
     //preload our junk to browser
     preloadFile = await fs.readFileSync(__dirname + '/preload.js', 'utf8');
