@@ -19,7 +19,7 @@ If you dont have chromium:
 npm install -g puff-fuzz
 ```
 
-**If you have chromium: (Don't forget to set its path in config.json)**
+**If you have chromium: (Don't forget to set path via puff -c "path/to/chromium/"
 
 windows:
 ```
@@ -48,6 +48,7 @@ Options:
   -s, --status             Show requests with unusual response codes
   -oA, --outputAll         Output all the responses
   -k, --ignoreSSL          Ignore ssl errors
+  -c, --chromePath <path>  Set chromium path permenantly
   -h, --help               display help for command
 ```
 
