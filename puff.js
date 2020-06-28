@@ -2,7 +2,6 @@ const puppeteer = require('puppeteer');
 const { program } = require('commander');
 const fs = require('fs')
 const path = require('path')
-var config = require('./config.json')
 var glob = require('glob')
 
 //pretty colors
@@ -28,6 +27,7 @@ program
 .option('-s, --status', 'Show requests with unusual response codes')
 .option('-oA, --outputAll', 'Output all the responses')
 .option('-k, --ignoreSSL', 'Ignore ssl errors')
+.option('-c, --chromePath <path>', 'Set chromium path permenantly')
 program.parse(process.argv);
 
 var pendingOutput=[]
@@ -133,6 +133,19 @@ var bLastOutputImportant=true
 var remoteAddr = false
 var remotePort = false
 
+if(program.chromePath){
+    var conf_temp = require('./config.json')
+    console.log("Chrome path changing from '" + conf_temp.chromium_path + "' to '" + program.chromePath + "'")
+    conf_temp.chromium_path = program.chromePath
+    fs.writeFileSync('./config.json', JSON.stringify(conf_temp), 'utf8');
+}
+
+
+
+
+
+
+var config = require('./config.json')
 
 //create new thread, in this context, create new chromium tab
 var threadIDCounter = 0
