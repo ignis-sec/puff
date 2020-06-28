@@ -3,7 +3,7 @@ const { program } = require('commander');
 const fs = require('fs')
 const path = require('path')
 var config = require('./config.json')
-
+var glob = require('glob')
 
 //pretty colors
 var fail="[\033[91m+\033[0m]"
@@ -309,6 +309,14 @@ function catchNormal(thread){
 }
 
 
+//resolve chromium path
+var chromium_path = glob.sync(config.chromium_path, {});
+if(chromium_path.length) chromium_path=chromium_path[0]
+else{
+    console.log("Could not resolve the directory in the config.json file.")
+    process.exit(1)
+}
+
 //init tool
 (async () => {
     //if its demo mode, clear commandline, and remove the actual command (so it hides the url in cli)
@@ -319,7 +327,7 @@ function catchNormal(thread){
         process.stdout.cursorTo(0,0)
     }
 
-    browser = await puppeteer.launch({executablePath:config.chromium_path,args: ['--no-sandbox', '--disable-setuid-sandbox'], ignoreHTTPSErrors: sslIgnore});
+    browser = await puppeteer.launch({executablePath:chromium_path,args: ['--no-sandbox', '--disable-setuid-sandbox'], ignoreHTTPSErrors: sslIgnore});
 
     //preload our junk to browser
     preloadFile = await fs.readFileSync(__dirname + '/preload.js', 'utf8');
