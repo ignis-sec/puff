@@ -20,8 +20,8 @@ var colstop = "\033[0m"
 /////////////////////////////////////////
 //SET CLI PARAMETERS
 program
-.requiredOption('-w, --wordlist <file>', 'wordlist to use')
-.requiredOption('-u, --url <url>', 'url to fuzz')
+.option('-w, --wordlist <file>', '[required] wordlist to use')
+.option('-u, --url <url>', '[required] url to fuzz')
 .option('-t, --threads <tcount>', 'threads to run', 5)
 .option('-v, --verbose', 'verbosity')
 .option('-o, --output <filename>', 'output filename')
@@ -142,6 +142,10 @@ if(program.chromePath){
     fs.writeFileSync('./config.json', JSON.stringify(conf_temp), 'utf8');
 }
 
+if(!(program.wordlist || program.url)){
+    console.log('Wordlist and url are required parameters.')
+    process.exit()
+}
 
 
 
