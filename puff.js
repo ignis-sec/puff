@@ -330,7 +330,13 @@ function catchNormal(thread){
 
 //resolve chromium path
 var chromium_path = glob.sync(config.chromium_path, {});
-if(chromium_path.length) chromium_path=chromium_path[0]
+if(chromium_path=='default'){//resolve default path
+    config.chromium_path = path.join(__dirname, "node_modules/puppeteer/.local-chromium/*/*/chrome.exe")
+
+    chromium_path=config.chromium_path
+    fs.writeFileSync(path.join(__dirname,'/config.json'), JSON.stringify(config), 'utf8');
+}
+else if(chromium_path.length) chromium_path=chromium_path[0]
 else{
     console.log("Could not resolve the directory in the config.json file.")
     process.exit(1)
