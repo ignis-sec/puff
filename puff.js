@@ -136,10 +136,10 @@ var remoteAddr = false
 var remotePort = false
 
 if(program.chromePath){
-    var conf_temp = require('./config.json')
+    var conf_temp = require(path.join(__dirname,'/config.json'))
     console.log("Chrome path changing from '" + conf_temp.chromium_path + "' to '" + program.chromePath + "'")
     conf_temp.chromium_path = program.chromePath
-    fs.writeFileSync('./config.json', JSON.stringify(conf_temp), 'utf8');
+    fs.writeFileSync(path.join(__dirname,'/config.json'), JSON.stringify(conf_temp), 'utf8');
 }
 
 if(!(program.wordlist || program.url)){
@@ -151,7 +151,7 @@ if(!(program.wordlist || program.url)){
 
 
 
-var config = require('./config.json')
+var config = require(path.join(__dirname,'/config.json'))
 
 //create new thread, in this context, create new chromium tab
 var threadIDCounter = 0
