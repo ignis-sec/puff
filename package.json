@@ -20,9 +20,9 @@
     "puppeteer": "^3.0.4"
   },
   "bin": {
-    "puff":"puff.js"
+    "puff": "puff.js"
   },
-  "pkg":{
-    "scripts":"preload.js"
+  "pkg": {
+    "scripts": "preload.js"
   }
 }
