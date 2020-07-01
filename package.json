@@ -1,8 +1,9 @@
 {
   "name": "puff-fuzz",
-  "version": "0.0.4",
-  "description": "",
+  "version": "0.0.5",
+  "description": "Simple Clientside vulnerability/xss fuzzer",
   "main": "puff.js",
+  "repository":"https://github.com/FlameOfIgnis/puff/issues",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

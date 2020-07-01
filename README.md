@@ -32,13 +32,13 @@ npm install -g puff-fuzz
 
 windows:
 ```
-set PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+set PUPPETEER_SKIP_DOWNLOAD=true
 npm install -g puff-fuzz
 ```
 
 linux:
 ```
-export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+export PUPPETEER_SKIP_DOWNLOAD=true
 npm install -g puff-fuzz
 ```
 
