@@ -328,22 +328,15 @@ function catchNormal(thread){
 }
 
 var chromium_path;
-console.log(config)
 //resolve chromium path
 if(!config.chromium_path) config.chromium_path='default';
 else if(config.chromium_path.includes('*')) chromium_path = glob.sync(config.chromium_path, {})[0];
 else chromium_path = config.chromium_path;
 
-console.log(config)
-console.log(JSON.stringify(config))
 if(chromium_path=='default'){//resolve default path
-    console.log(config)
-    console.log(JSON.stringify(config))
     if(process.platform=='win32') chromium_path = glob.sync(path.join(__dirname, "/node_modules/puppeteer/.local-chromium/*/*/chrome.exe"))[0]
     else chromium_path = glob.sync(path.join(__dirname, "/node_modules/puppeteer/.local-chromium/*/*/chrome"))[0]
     config.chromium_path=chromium_path
-    console.log(config)
-    console.log(JSON.stringify(config))
     fs.writeFileSync(path.join(__dirname,'/config.json'), JSON.stringify(config), 'utf8'); //NEEDS FIX // CAUSING TROUBLE FOR OSX
     
 }
