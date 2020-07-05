@@ -6,7 +6,7 @@ const puppeteer = require('puppeteer');
 const { program } = require('commander');
 const fs = require('fs')
 const path = require('path')
-
+const readline = require('readline')
 
 //config wizard and io handlers
 const {setChromePath,resolveChromiumPath} = require('./configwiz.js')
@@ -60,13 +60,6 @@ var config = require(path.join(__dirname,'/config.json'))
 //resolve ch
 var chromium_path = resolveChromiumPath(config);
 
-//check if required parameters were given
-if(!(program.wordlist || program.url)){
-    console.log('Wordlist and url are required parameters.')
-    process.exit()
-}
-
-
 
 //init tool
 (async () => {
@@ -80,16 +73,75 @@ if(!(program.wordlist || program.url)){
     terminator.browser = browser;
     threadHandler = new ThreadHandler(browser)
 
-    
-    const {SingleUrlFuzzer} = require('./SingleUrlFuzzer.js')
-    var suFuzzer = new SingleUrlFuzzer(program.url, cbHandler, threadHandler, terminator, wordlist, verbose);
+
+    //normal mode
+    if(program.wordlist && program.url){
+        const {SingleUrlFuzzer} = require('./fuzzers/SingleUrlFuzzer.js')
+        var suFuzzer = new SingleUrlFuzzer(program.url, cbHandler, threadHandler, terminator, wordlist, verbose);
+        //initialize threads
+        for(var i=0;i<workerCount;i++){
+            var newThread = threadHandler.newThread(browser, suFuzzer, cbHandler);
+            console.log('New thread created')
+            threads.push(newThread)
+        }
 
 
-    //initialize threads
-    for(var i=0;i<workerCount;i++){
-        var newThread = threadHandler.newThread(browser, suFuzzer, cbHandler);
-        console.log('New thread created')
-        threads.push(newThread)
+
+
+
+    //Get url from stdin
+    }else if(program.wordlist){
+        console.log('Running stdin fuzzer mode.')
+        const {SingleUrlFuzzer} = require('./fuzzers/SingleUrlFuzzer.js')
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+          });
+
+        rl.on('line', (url) => {
+            if(url=='') return
+            var suFuzzer = new SingleUrlFuzzer(url, cbHandler, threadHandler, terminator, wordlist, verbose, true);
+            //initialize threads
+            for(var i=0;i<workerCount;i++){
+                var newThread = threadHandler.newThread(browser, suFuzzer, cbHandler);
+                console.log('New thread created')
+                threads.push(newThread)
+            }
+        });
+        rl.on('SIGINT', ()=>{
+            terminator.graceful()
+        })
+
+
+    //get payloads from stdin
+    }else if(program.url){
+        console.log('Invalid arguements.')//This mode is not yet implemented
+        process.exit(1)
+
+
+
+    //test single url
+    }else{
+        console.log('Running on stdin single payload mode..')
+        const {SinglePayloadFuzzer} = require('./fuzzers/SinglePayloadFuzzer.js')
+
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+          });
+        rl.on('line', (url) => {
+            if(url=='') return
+            var singlePayloadFuzzer = new SinglePayloadFuzzer(url, cbHandler, threadHandler, terminator, verbose);
+            var newThread = threadHandler.newThread(browser, singlePayloadFuzzer, cbHandler);
+        });
+
+        rl.on('SIGINT', ()=>{
+            terminator.graceful()
+        })
+        
     }
+
+
+    
 
 })();

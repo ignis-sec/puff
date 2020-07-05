@@ -70,7 +70,7 @@ Don't worry, just modify your wordlist to use `puff()`  instead of `alert()` in 
 
 
 
-Running from source:
+**Running from source:**
 ```
 node puff.js -w xss.txt -u "http://your.url?message=FUZZ"
 
@@ -79,7 +79,7 @@ node puff.js -w xss.txt -u "http://your.url?message=FUZZ" -t 25
 node puff.js -w xss.txt -u "http://your.url?message=FUZZ" -d
 ```
 
-installed via npm:
+**installed via npm:**
 ```
 puff -w xss.txt -u "http://your.url?message=FUZZ"
 
@@ -87,6 +87,42 @@ puff -w xss.txt -u "http://your.url?message=FUZZ" -t 25
 
 puff -w xss.txt -u "http://your.url?message=FUZZ" -d
 ```
+
+
+
+**Running with stdin fuzzing mode:**
+```
+cat urls.txt | node puff.js -w .\wordlist-examples\events.txt
+
+
+cat urls.txt | puff -w .\wordlist-examples\events.txt
+```
+Where urls.txt is
+```
+http://example.com?query=FUZZ
+https://another.com/page/#FUZZ
+```
+
+
+**Running with stdin single payload mode:**
+```
+cat urls.txt | node puff.js -w .\wordlist-examples\events.txt
+
+
+cat urls.txt | puff -w .\wordlist-examples\events.txt
+```
+
+Where urls.txt is
+```
+http://example.com?query=<script>alert()</script>
+http://example.com?query=javascript:alert()
+https://another.com/page/#<script>alert()</script>
+```
+
+
+
+
+
 
 ---
 

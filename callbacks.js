@@ -47,11 +47,11 @@ class TriggerHandler{
         })
     
         //xss windows tend to get load looped, but not sure if needed
-        //thread.evaluate(() => window.stop());
+        thread.evaluate(() => window.stop());
     }
 
     catchLoadFailure(thread){
-        this.outputHandler.write(`${bstart}[${thread.status}]  [FAILURE]  ${thread.pld} ${colstop}`, 5000)
+        this.outputHandler.write(`${bstart} [${thread.status}]  [FAILURE]  ${thread.pld} ${colstop}`, 5000)
         this.outputHandler.bLastOutputImportant=true
     }
 
