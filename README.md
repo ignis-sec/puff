@@ -106,10 +106,10 @@ https://another.com/page/#FUZZ
 
 **Running with stdin single payload mode:**
 ```
-cat urls.txt | node puff.js -w .\wordlist-examples\events.txt
+cat urls.txt | node puff.js
 
 
-cat urls.txt | puff -w .\wordlist-examples\events.txt
+cat urls.txt | puff
 ```
 
 Where urls.txt is
