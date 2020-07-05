@@ -1,6 +1,6 @@
 
-const {fail,succ,warn,info,gstart,bstart,ystart,rstart,colstop} = require('./pretty.js')
-const fs = require('fs')
+const {fail,succ,warn,info,gstart,bstart,ystart,rstart,colstop} = require('../pretty.js')
+
 function replaceKeyword(url,pld){
     pld = pld.replace(/ /g, '%20')
     var t=url;
@@ -41,7 +41,7 @@ class SingleUrlFuzzer{
 
     async acquire(){
         /*
-        * Acquire next url from wordlist
+        * Acquire next url from stdin
         */
         
         var line = this.wlistContent[this.wlistFpointer];

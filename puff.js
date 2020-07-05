@@ -73,8 +73,10 @@ var chromium_path = resolveChromiumPath(config);
     terminator.browser = browser;
     threadHandler = new ThreadHandler(browser)
 
+
+    //normal mode
     if(program.wordlist && program.url){
-        const {SingleUrlFuzzer} = require('./SingleUrlFuzzer.js')
+        const {SingleUrlFuzzer} = require('./fuzzers/SingleUrlFuzzer.js')
         var suFuzzer = new SingleUrlFuzzer(program.url, cbHandler, threadHandler, terminator, wordlist, verbose);
         //initialize threads
         for(var i=0;i<workerCount;i++){
@@ -82,9 +84,15 @@ var chromium_path = resolveChromiumPath(config);
             console.log('New thread created')
             threads.push(newThread)
         }
+
+
+
+
+
+    //Get url from stdin
     }else if(program.wordlist){
         console.log('Running stdin fuzzer mode.')
-        const {SingleUrlFuzzer} = require('./SingleUrlFuzzer.js')
+        const {SingleUrlFuzzer} = require('./fuzzers/SingleUrlFuzzer.js')
         const rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout
@@ -103,14 +111,36 @@ var chromium_path = resolveChromiumPath(config);
         rl.on('SIGINT', ()=>{
             terminator.graceful()
         })
+
+
+    //get payloads from stdin
+    }else if(program.url){
+        console.log('Invalid arguements.')//This mode is not yet implemented
+        process.exit(1)
+
+
+
+    //test single url
     }else{
+        const {SinglePayloadFuzzer} = require('./fuzzers/SinglePayloadFuzzer.js')
+
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+          });
+        rl.on('line', (url) => {
+            if(url=='') return
+            var singlePayloadFuzzer = new SinglePayloadFuzzer(url, cbHandler, threadHandler, terminator, verbose);
+            var newThread = threadHandler.newThread(browser, singlePayloadFuzzer, cbHandler);
+        });
+
+        rl.on('SIGINT', ()=>{
+            terminator.graceful()
+        })
         
     }
-   
 
 
     
 
 })();
-
-//https://xss-game.appspot.com/level1/frame?query=FUZZ
