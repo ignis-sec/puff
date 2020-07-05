@@ -103,6 +103,8 @@ var chromium_path = resolveChromiumPath(config);
         rl.on('SIGINT', ()=>{
             terminator.graceful()
         })
+    }else{
+        
     }
    
 

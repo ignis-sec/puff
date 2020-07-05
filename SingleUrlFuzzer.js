@@ -62,9 +62,9 @@ class SingleUrlFuzzer{
                 outputHandler.deleteLastLine()
                 console.log("Thread finished")
             }
-            
+            this.threadHandler.workerCount-=1;
             //Only terminate program if all the threads have finished, so it doesn't lose the progress on those pending requests. 
-            if(this.terminator.terminatedCount==threadHandler.workerCount){
+            if(this.threadHandler.workerCount==0){
                 //TODO, timeout possible idle/stuck threads and terminate
                 if(this.verbose){
                     outputHandler.deleteLastLine()
@@ -86,7 +86,12 @@ class SingleUrlFuzzer{
         /*
         * Load next url from from the wordlist
         */
-        if(this.checkFinished()) return;
+        if(this.checkFinished()){
+            try{
+                await thread.close()
+            }catch(e){};
+            return;
+        }
         var line = await this.acquire()
         thread.url = await replaceKeyword(this.url, line)
         thread.pld = line

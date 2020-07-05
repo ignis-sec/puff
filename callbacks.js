@@ -47,7 +47,7 @@ class TriggerHandler{
         })
     
         //xss windows tend to get load looped, but not sure if needed
-        //thread.evaluate(() => window.stop());
+        thread.evaluate(() => window.stop());
     }
 
     catchLoadFailure(thread){
