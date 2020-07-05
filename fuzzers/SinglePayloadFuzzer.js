@@ -34,6 +34,7 @@ class SinglePayloadFuzzer{
         * Load next url from from the wordlist
         */
         thread.url = this.url
+        thread.pld = ''
         await this.processURL(thread,thread.url)
         thread.close()
     }

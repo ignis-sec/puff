@@ -122,6 +122,7 @@ var chromium_path = resolveChromiumPath(config);
 
     //test single url
     }else{
+        console.log('Running on stdin single payload mode..')
         const {SinglePayloadFuzzer} = require('./fuzzers/SinglePayloadFuzzer.js')
 
         const rl = readline.createInterface({
