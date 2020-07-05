@@ -50,13 +50,13 @@ var threads = []
 
 
 
-var config = require(path.join(__dirname,'/config.json'))
 
 //if -c is passed, set new chrome path
 if(program.chromePath){
     setChromePath(program.chromePath)
 }
 
+var config = require(path.join(__dirname,'/config.json'))
 //resolve ch
 var chromium_path = resolveChromiumPath(config);
 
