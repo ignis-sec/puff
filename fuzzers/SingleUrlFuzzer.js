@@ -43,12 +43,12 @@ class SingleUrlFuzzer{
         /*
         * Acquire next url from wordlist
         */
+       
+        this.wlistFpointer+=1
         if(this.wlistFpointer<this.wlistContent.length){
-            var line = this.wlistContent[this.wlistFpointer];
-            this.wlistFpointer+=1
+            let line = this.wlistContent[this.wlistFpointer];
             return line
         }else{
-            console.log("Thread finished.")
             this.terminator.terminatedCount+=1
             return -1
         }

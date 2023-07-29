@@ -60,7 +60,6 @@ class SingleUrlFuzzer{
             this.wlistFpointer+=1
             if(this.verbose){
                 outputHandler.deleteLastLine()
-                console.log("Thread finished")
             }
             this.threadHandler.workerCount-=1;
             //Only terminate program if all the threads have finished, so it doesn't lose the progress on those pending requests. 
