@@ -12,6 +12,8 @@ Simple clientside vulnerability fuzzer, powered by puppeteer.
 
 ** I will eventually rewrite this project. It works well, but it's not very clean and from my amateur years.**
 
+<img src="https://s11.gifyu.com/images/SchPf.gif">
+
 ## How does it work?
 This tool uses puppeteer to open a headless browser, and then injects payloads into the page, and checks if the payload was executed. This ensures there are no false alarms as it will only report a URL if the function was already called, providing a proof-of-concept.
 

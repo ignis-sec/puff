@@ -51,7 +51,7 @@ class TriggerHandler{
     }
 
     catchLoadFailure(thread){
-        this.outputHandler.write(`${bstart} [${thread.status}]  [FAILURE]  ${thread.url} ${colstop}`, 5000)
+        this.outputHandler.write(`${bstart}[${thread.id}][${thread.status}]  [FAILURE]  ${thread.url} ${colstop}`, 5000)
         this.outputHandler.bLastOutputImportant=true
     }
 
