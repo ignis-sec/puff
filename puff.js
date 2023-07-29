@@ -84,6 +84,15 @@ var chromium_path = resolveChromiumPath(config);
             console.log('New thread created')
             threads.push(newThread)
         }
+        
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+
+        rl.on('SIGINT', ()=>{
+            terminator.graceful()
+        })
 
 
 
