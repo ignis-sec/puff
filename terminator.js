@@ -5,6 +5,7 @@ class Terminator{
     constructor(process,program){
         this.terminatedCount=0;
         this.terminated=false;
+        this.workerCount=0;
         //register signal handlers
         process.once('SIGINT', function (code) {
             Terminator.prototype.graceful()
@@ -24,6 +25,10 @@ class Terminator{
             this.terminated=true
             this.browser.close()
         }
+    }
+
+    register(thread){
+        this.workerCount+=1;
     }
 
     graceful(bTerminate=true){

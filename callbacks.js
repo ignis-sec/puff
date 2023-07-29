@@ -39,10 +39,10 @@ class TriggerHandler{
 
 
     catchXSS(thread, href){
-        this.outputHandler.write(`${rstart}[${thread.id}][${200}]  [XSS]  ${thread.url} ${colstop}`)
+        this.outputHandler.write(`${rstart}[${thread.id}][${200}]  [XSS]  ${href} ${colstop}`)
         this.outputHandler.bLastOutputImportant=true
         pendingOutput.push({
-            url:thread.url,
+            url:href,
             payload:thread.pld
         })
     
@@ -51,7 +51,7 @@ class TriggerHandler{
     }
 
     catchLoadFailure(thread){
-        this.outputHandler.write(`${bstart} [${thread.status}]  [FAILURE]  ${thread.pld} ${colstop}`, 5000)
+        this.outputHandler.write(`${bstart} [${thread.status}]  [FAILURE]  ${thread.url} ${colstop}`, 5000)
         this.outputHandler.bLastOutputImportant=true
     }
 

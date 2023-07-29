@@ -10,6 +10,11 @@
 # PUFF
 Simple clientside vulnerability fuzzer, powered by puppeteer.
 
+** I will eventually rewrite this project. It works well, but it's not very clean and from my amateur years.**
+
+## How does it work?
+This tool uses puppeteer to open a headless browser, and then injects payloads into the page, and checks if the payload was executed. This ensures there are no false alarms as it will only report a URL if the function was already called, providing a proof-of-concept.
+
 ## Requirements
 - npm
 
@@ -42,6 +47,16 @@ export PUPPETEER_SKIP_DOWNLOAD=true
 npm install -g puff-fuzz
 ```
 
+
+**Testing**
+```
+Windows:
+node puff.js -w .\wordlist-examples\xss.txt -u "http://www.xssgame.com/f/m4KKGHi2rVUN/?query=FUZZ"
+
+Linux:
+node puff.js -w ./wordlist-examples/xss.txt -u "http://www.xssgame.com/f/m4KKGHi2rVUN/?query=FUZZ"
+```
+
 # Help String
 
 ```
@@ -66,7 +81,6 @@ Options:
 Don't worry, just modify your wordlist to use `puff()`  instead of `alert()` in your payload.
 
 # Sample runs
-
 
 
 
@@ -120,20 +134,3 @@ https://another.com/page/#<script>alert()</script>
 ```
 
 
-
-
-
-
----
-
-<p align="center">
-  Helped you land a bounty? Buy me a coffee!
-</p>
-
-<p align="center">
-  <img src="https://flameofignis.com/raw/puff-donate.png" />
-</p>
-
-<p align="center">
-  bc1qdmu283ez2u5nch7mqla0e0uav7gdus4g44unmv
-</p>
