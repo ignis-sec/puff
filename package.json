@@ -1,6 +1,6 @@
 {
   "name": "puff-fuzz",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Simple Clientside vulnerability/xss fuzzer",
   "main": "puff.js",
   "repository": "https://github.com/FlameOfIgnis/puff",
