@@ -43,40 +43,21 @@ class SingleUrlFuzzer{
         /*
         * Acquire next url from wordlist
         */
+        if(this.wlistFpointer<this.wlistContent.length){
+            var line = this.wlistContent[this.wlistFpointer];
+            this.wlistFpointer+=1
+            return line
+        }else{
+            console.log("Thread finished.")
+            this.terminator.terminatedCount+=1
+            return -1
+        }
         
-        var line = this.wlistContent[this.wlistFpointer];
-        this.wlistFpointer+=1
-        return line
     }
 
     checkFinished(){
-        /*
-        * Check if wordlist finished
-        */
 
-        //if this thread is done
-        if(this.wlistFpointer>=this.wlistContent.length){
-            this.terminator.terminatedCount+=1
-            this.wlistFpointer+=1
-            if(this.verbose){
-                outputHandler.deleteLastLine()
-                console.log("Thread finished")
-            }
-            this.threadHandler.workerCount-=1;
-            //Only terminate program if all the threads have finished, so it doesn't lose the progress on those pending requests. 
-            if(this.threadHandler.workerCount==0){
-                //TODO, timeout possible idle/stuck threads and terminate
-                if(this.verbose){
-                    outputHandler.deleteLastLine()
-                    outputHandler.write('Last url checked, waiting for all threads to finish')
-                }
-                
-                if(this.multi){
-                    console.log('')
-                }else{
-                    this.terminator.terminate()
-                }
-            }
+        if(this.terminator.terminatedCount == this.terminator.workerCount){
             return true;
         }
         return false;
@@ -86,16 +67,26 @@ class SingleUrlFuzzer{
         /*
         * Load next url from from the wordlist
         */
+
+        var line = await this.acquire()
         if(this.checkFinished()){
+            await this.terminator.terminate();
+            process.exit(0);
+        }
+        if(line == -1){
             try{
-                await thread.close()
+                return await thread.close()
             }catch(e){};
             return;
         }
-        var line = await this.acquire()
-        thread.url = await replaceKeyword(this.url, line)
-        thread.pld = line
-        this.processURL(thread,thread.url)
+        if(line != ""){
+            thread.url = await replaceKeyword(this.url, line)
+            thread.pld = line
+            this.processURL(thread,thread.url)
+        }else{
+            this.loadNextUrl(thread)
+        }
+
     }
 
 

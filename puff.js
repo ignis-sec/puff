@@ -81,6 +81,7 @@ var chromium_path = resolveChromiumPath(config);
         //initialize threads
         for(var i=0;i<workerCount;i++){
             var newThread = threadHandler.newThread(browser, suFuzzer, cbHandler);
+            terminator.register(newThread);
             console.log('New thread created')
             threads.push(newThread)
         }
